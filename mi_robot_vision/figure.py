@@ -2,7 +2,7 @@
 import cv2
 image = cv2.imread('prueba1.jpeg')
 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-canny = cv2.Canny(gray, 10, 150)
+canny = cv2.Canny(gray, 20, 150)
 canny = cv2.dilate(canny, None, iterations=1)
 canny = cv2.erode(canny, None, iterations=1)
 
