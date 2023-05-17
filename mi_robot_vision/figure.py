@@ -1,8 +1,8 @@
 #Primer archivo prueba de reconocimiento de imagenes
 import cv2
 
-def detectar_figura(): 
-    image = cv2.imread('prueba1.jpeg')
+image = cv2.imread('prueba1.jpeg')
+def detectar_figura(image): 
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     canny = cv2.Canny(gray, 20, 150)
     canny = cv2.dilate(canny, None, iterations=1)
@@ -46,9 +46,9 @@ def detectar_figura():
                 cv2.putText(image,figure, (x,y-5),1,1.5,(0,255,0),2)
         n +=1
     
-    #cv2.drawContours(image, [approx], 0, (0,255,0),2)
+    cv2.drawContours(image, [approx], 0, (0,255,0),2)
     #cv2.imshow('image',image)
     #cv2.waitKey(0)    
     return figure
 
-print (f"la figura es: un {detectar_figura()}")
+print (f"la figura es: un {detectar_figura(image)}")
