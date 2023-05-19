@@ -1,6 +1,8 @@
 import cv2
 import easyocr
 import numpy as np
+
+
 def detectar_letras(image,reader):
     result = reader.readtext(image, paragraph=False)
     for res in result:
@@ -62,7 +64,7 @@ def detectar_figura(image):
                 cv2.putText(image,figure, (x,y-5),1,1.5,(0,255,0),2)
             
             elif len(approx)>10:
-                figure="Ciruculo"
+                figure="Circulo"
                 cv2.putText(image,figure, (x,y-5),1,1.5,(0,255,0),2)
         n +=1
     
@@ -177,11 +179,30 @@ def detectar_colores(image):
 	#	cv2.destroyAllWindows()
 	#	break
 
-reader = easyocr.Reader(["es"], gpu=False)
-image = cv2.imread("prueba2.jpeg")
-detectar_letras(image,reader)
-detectar_colores(image)
-print (f"la figura es: un {detectar_figura(image)}")
-cv2.imshow('image',image)
-cv2.waitKey(0)  
 
+def main(args=None):
+    #webcam = cv2.VideoCapture(0)   
+    reader = easyocr.Reader(["es"], gpu=False)
+    image = cv2.imread("prueba2.jpeg")
+    detectar_letras(image,reader)
+    detectar_colores(image)
+    print (f"la figura es: un {detectar_figura(image)}")
+    cv2.imshow('image',image)
+    cv2.waitKey(0)  
+    '''
+    while(1):
+        _, image = webcam.read()
+        #image = cv2.imread("prueba2.jpeg")
+        detectar_letras(image,reader)
+        detectar_colores(image)
+        print (f"la figura es: un {detectar_figura(image)}")
+        cv2.imshow('image',image)
+        cv2.waitKey(0)  
+        #if cv2.waitKey(10) & 0xFF == ord('q'):
+        #if cv2.waitKey(10) :
+        #cap.release()
+        #    cv2.destroyAllWindows()
+        #    break
+        '''
+if __name__ == '__main__':
+    main()
