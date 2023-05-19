@@ -177,19 +177,16 @@ def detectar_colores(image):
 	#if cv2.waitKey(10) & 0xFF == ord('q'):
 	#	cap.release()
 	#	cv2.destroyAllWindows()
-	#	break
 
-
-def main(args=None):
     #webcam = cv2.VideoCapture(0)   
-    reader = easyocr.Reader(["es"], gpu=False)
-    image = cv2.imread("prueba2.jpeg")
-    detectar_letras(image,reader)
-    detectar_colores(image)
-    print (f"la figura es: un {detectar_figura(image)}")
-    cv2.imshow('image',image)
-    cv2.waitKey(0)  
-    '''
+reader = easyocr.Reader(["es"], gpu=False)
+image = cv2.imread("prueba2.jpg")
+detectar_letras(image,reader)
+detectar_colores(image)
+print (f"la figura es: un {detectar_figura(image)}")
+cv2.imshow('image',image)
+cv2.waitKey(0)  
+'''
     while(1):
         _, image = webcam.read()
         #image = cv2.imread("prueba2.jpeg")
@@ -204,5 +201,4 @@ def main(args=None):
         #    cv2.destroyAllWindows()
         #    break
         '''
-if __name__ == '__main__':
-    main()
+
