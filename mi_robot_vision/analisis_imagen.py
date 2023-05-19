@@ -4,7 +4,7 @@ import numpy as np
 
 
 def detectar_letras(image,reader):
-    result = reader.readtext(image, paragraph=False)
+    result = reader.readtext(image, paragraph=True)
     for res in result:
         print("res:", res[1])
         pt0 = res[0][0]
@@ -179,8 +179,11 @@ def detectar_colores(image):
 	#	cv2.destroyAllWindows()
 
     #webcam = cv2.VideoCapture(0)   
-reader = easyocr.Reader(["es"], gpu=False)
+
 image = cv2.imread("prueba2.jpg")
+#image = image[0:int (len(image)*0.8),int (len(image[0])*0.2): int (len(image[0])*0.8)]
+#image2 = image[int (len(image)*0.2):int (len(image)*0.5),int (len(image[0])*0.3): int (len(image[0])*0.6)]
+reader = easyocr.Reader(["es"], gpu=True)
 detectar_letras(image,reader)
 detectar_colores(image)
 print (f"la figura es: un {detectar_figura(image)}")
