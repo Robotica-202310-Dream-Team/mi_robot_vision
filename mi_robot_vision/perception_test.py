@@ -1,8 +1,10 @@
 import rclpy
 from rclpy.node import Node
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import Twist, Vector3
 from proyecto_interfaces.srv import StartPerceptionTest
 from proyecto_interfaces.msg import Banner
+from std_msgs.msg import String, Float32MultiArray, Bool
+
 
 
 class Perception_test(Node):
@@ -11,7 +13,9 @@ class Perception_test(Node):
         super().__init__('perception_test')
         self.srv = self.create_service(StartPerceptionTest, 'group_12/start_perception_test_srv', self.read_txt_callback)
         self.publisher = self.create_publisher(Banner, 'vision/banner_group_12', 10)
-        
+        self.sub_pos_final= self.create_subscription(Float32MultiArray,'posicion_final',self.callback_pos_final, 10)
+        self.sub_llego= self.create_subscription(Bool,'llego',self.callback_llego, 10)
+
         print('Servicio para la prueba de percepción listo')
         x_goal_1 = 0
         y_goal_1 = 0  
