@@ -1,5 +1,3 @@
-
-
 #DATE=$(date +"%Y-%m-%d_%H%M")
 #fswebcam -r 1280.0x720.0 --no-banner /home/robotica/proyecto_ws/src/mi_robot_vision/mi_robot_vision/$DATE.jpg
 #!/usr/bin/python3
@@ -12,10 +10,11 @@ from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
 
 class ImagePublisher(Node):
-    def __init__(self, file_path):
+    def __init__(self):
         super().__init__("image_publisher")
+        print("Inicio del nodo que publica la imagen")
         self.bridge = CvBridge()
-        self.cap = cv2.VideoCapture(file_path)
+        self.cap = cv2.VideoCapture(0)
         self.pub = self.create_publisher(Image, "/video", 10)
 
     def run(self):
@@ -30,16 +29,7 @@ class ImagePublisher(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-
-    if(len(sys.argv) is not 2):
-        print("Incorrect number of arguments\nUsage:\n\tpython3 <path_to_video_file>")
-        exit()
-
-    if not os.path.isfile(sys.argv[1]):
-        print("Invalid file path")
-        exit()
-
-    ip = ImagePublisher(sys.argv[1])
+    ip = ImagePublisher()
     print("Publishing...")
     ip.run()
 
