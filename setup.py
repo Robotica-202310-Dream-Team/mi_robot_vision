@@ -20,6 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+             'tomarFoto = mi_robot_vision.tomarFoto:main',
         ],
     },
 )
