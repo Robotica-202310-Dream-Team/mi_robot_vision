@@ -21,7 +21,8 @@ setup(
     entry_points={
         'console_scripts': [
              'tomarFoto = mi_robot_vision.tomarFoto:main',
-             'perception_test = mi_robot_navegacion.perception_test:main',
+             'perception_test = mi_robot_vision.perception_test:main',
+             'analisis_imagen = mi_robot_vision.analisis_imagen:main',
 
         ],
     },

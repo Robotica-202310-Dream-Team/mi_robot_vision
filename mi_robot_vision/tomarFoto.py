@@ -15,7 +15,7 @@ class ImagePublisher(Node):
         print("Inicio del nodo que publica la imagen")
         self.bridge = CvBridge()
         self.cap = cv2.VideoCapture(0)
-        self.pub = self.create_publisher(Image, "/video", 10)
+        self.pub = self.create_publisher(Image, "video", 10)
 
     def run(self):
         while(self.cap.isOpened()):
