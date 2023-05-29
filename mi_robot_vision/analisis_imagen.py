@@ -23,8 +23,14 @@ class Analisis_Imagen(Node):
         except CvBridgeError as e:
             print(e)
         cv2.imshow("Image window", cv_image)
-        cv2.waitKey(3)
+        reader = easyocr.Reader(["es"], gpu=True)
+        self.detectar_colores(cv_image)
+        figura = self.detectar_figura(cv_image)
+        self.detectar_letras(cv_image,reader)
+        print (f"la figura es: {figura}")
+        cv2.waitKey(10)
     
+
     def detectar_letras(self,image,reader):
         result = reader.readtext(image, paragraph=True)
         for res in result:
