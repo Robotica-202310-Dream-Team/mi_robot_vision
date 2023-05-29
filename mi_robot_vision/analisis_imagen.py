@@ -22,12 +22,13 @@ class Analisis_Imagen(Node):
             cv_image = self.bridge.imgmsg_to_cv2(msg, "bgr8")
         except CvBridgeError as e:
             print(e)
-        cv2.imshow("Image window", cv_image)
         reader = easyocr.Reader(["es"], gpu=True)
-        self.detectar_colores(cv_image)
-        figura = self.detectar_figura(cv_image)
-        self.detectar_letras(cv_image,reader)
-        print (f"la figura es: {figura}")
+        image = cv_image[0:int (len(cv_image)*0.8),int (len(cv_image[0])*0.2): int (len(cv_image[0])*0.8)]
+        self.detectar_colores(image)
+        figura = self.detectar_figura(image)
+        self.detectar_letras(image,reader)
+        print (f"La figura es: {figura}")
+        cv2.imshow("Image window", image)
         cv2.waitKey(10)
     
 
