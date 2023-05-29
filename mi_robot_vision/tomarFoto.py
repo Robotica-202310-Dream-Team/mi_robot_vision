@@ -32,6 +32,8 @@ def main(args=None):
     ip = ImagePublisher()
     print("Publishing...")
     ip.run()
+
+"""
 #!/usr/bin/python3
 import rclpy
 from rclpy.node import Node
@@ -61,6 +63,6 @@ class ImagePublisher(Node):
 
     ip.destroy_node()
     rclpy.shutdown()
-
+"""
 if __name__ == '__main__':
     main()

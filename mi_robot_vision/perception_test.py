@@ -4,6 +4,7 @@ from geometry_msgs.msg import Twist, Vector3
 from proyecto_interfaces.srv import StartPerceptionTest
 from proyecto_interfaces.msg import Banner
 from std_msgs.msg import String, Float32MultiArray, Bool
+from proyecto_interfaces.srv import StartNavigationTest
 
 
 
@@ -28,28 +29,38 @@ class Perception_test(Node):
         banner_b_goal = request.banner_b
         print("Los banners a identificar son: " + str(banner_a_goal) + " y "+ str(banner_b_goal))
         if banner_a_goal == 1:
-            x_goal_1 = 0
-            y_goal_1 = 0
+            x_goal_1 = 0.0
+            y_goal_1 = 0.0
         elif banner_a_goal == 2:
-            x_goal_1 = 0
-            y_goal_1 = 0
+            x_goal_1 = 0.0
+            y_goal_1 = 0.0
         elif banner_a_goal == 3:
-            x_goal_1 = 0
-            y_goal_1 = 0  
+            x_goal_1 = 0.0
+            y_goal_1 = 0.0
 
         if banner_b_goal == 1:
-            x_goal_2 = 0
-            y_goal_2 = 0
+            x_goal_2 = 0.0
+            y_goal_2 = 0.0
         elif banner_b_goal == 2:
-            x_goal_2 = 0
-            y_goal_2 = 0
+            x_goal_2 = 0.0
+            y_goal_2 = 0.0
         elif banner_b_goal == 3:
-            x_goal_2 = 0
-            y_goal_2 = 0   
+            x_goal_2 = 0.0
+            y_goal_2 = 0.0 
+        self.call_navigation_test_srv(float(x_goal_1),float(y_goal_1))
         response.answer = "Debo identificar el banner a que se encuentra en las coordenadas ("+str(x_goal_1)+","+str(y_goal_1)+") y el banner b que se encuentra en las coordenadas ("+str(x_goal_2)+","+str(y_goal_2)+")."
         return response
 
-
+    def call_navigation_test_srv(self, x_coordinate: float, y_coordinate: float):
+        self.navigation_client = self.create_client(StartNavigationTest, '/group_12/start_navigation_test_srv')
+        while not self.navigation_client.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info('Service not available, waiting again...')
+        self.req = StartNavigationTest.Request()
+        self.req.x = x_coordinate
+        self.req.y = y_coordinate
+        self.future = self.navigation_client.call_async(self.req)
+        rclpy.spin_until_future_complete(self, self.future)
+        return self.future.result()
 
 def main(args=None):
     rclpy.init(args=args)
