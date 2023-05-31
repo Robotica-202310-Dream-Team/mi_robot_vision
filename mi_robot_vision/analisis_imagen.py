@@ -29,7 +29,10 @@ class Analisis_Imagen(Node):
         figura = self.detectar_figura(image)
         self.detectar_letras(image,reader)
         print (f"La figura es: {figura}")
-        cv2.imshow("Image window", image)
+        ruta ="/home/sebastian/Uniandes202310/Robotica/proyecto_final/proyecto_final_ws/src/mi_robot_vision/mi_robot_vision/perspectiva_actual.png"
+		
+        #cv2.imshow("Image window", image)
+        cv2.imwrite (ruta,image)
         cv2.waitKey(10)
     
 
