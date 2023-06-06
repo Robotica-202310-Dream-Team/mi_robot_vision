@@ -25,7 +25,6 @@ class ImagePublisher(Node):
             h, w, c = frame.shape
             print('width:  ', w)
             print('height: ', h)
-            print('channel:', c)
             frame = cv2.resize(frame, (int(h*0.5),int(w*0.5)))
             if ret:
                 ti= time.time() 
