@@ -15,7 +15,7 @@ import cv2
 
 app = Flask("camera_streaming")
 
-cap_micro = cv2.VideoCapture("/dev/video0", cv2.CAP_V4L) #cv2.CAP_DSHOW)
+cap_micro = cv2.VideoCapture("/dev/video1", cv2.CAP_V4L) #cv2.CAP_DSHOW)
 
 def template_string_generator(video_feed_filename, video_feed_name):
      s = """
