@@ -7,17 +7,18 @@ import os
 import sys
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
-
+import time
 
 class Analisis_Imagen(Node):
 
     def __init__(self):
         super().__init__('analisis_imagen')
         self.bridge=CvBridge()
-        self.sub_video= self.create_subscription(Image,'video',self.callback_video, 10)
+        self.sub_video= self.create_subscription(Image,'video',self.callback_video, 1)
         print("Inicio del nodo que analiza la imagen recibida por la cámara")
         self.reader = easyocr.Reader(["es"], gpu=True)
     def callback_video(self,msg):
+        ti = time.time()
         print("Llego imagen")
         try:
             cv_image = self.bridge.imgmsg_to_cv2(msg, "bgr8")
@@ -30,9 +31,11 @@ class Analisis_Imagen(Node):
         #print (f"La figura es: {figura}")
         ruta ="/home/sebastian/Uniandes202310/Robotica/proyecto_final/proyecto_final_ws/src/mi_robot_vision/mi_robot_vision/perspectiva_actual.png"
 		
-        #cv2.imshow("Image window", image)
-        cv2.imwrite (ruta,image)
-        cv2.waitKey(10)
+        cv2.imshow("Image window", image)
+        #cv2.imwrite (ruta,image)
+        cv2.waitKey(1)
+        tf = time.time()
+        print (f"Tiempo de ejecución: {tf-ti}")
     
 #############################################################################################################
     def detectar_letras(self,image):
