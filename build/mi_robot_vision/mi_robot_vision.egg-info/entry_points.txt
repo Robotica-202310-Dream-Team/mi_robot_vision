@@ -1,0 +1,5 @@
+[console_scripts]
+analisis_imagen = mi_robot_vision.analisis_imagen:main
+perception_test = mi_robot_vision.perception_test:main
+tomarFoto = mi_robot_vision.tomarFoto:main
+

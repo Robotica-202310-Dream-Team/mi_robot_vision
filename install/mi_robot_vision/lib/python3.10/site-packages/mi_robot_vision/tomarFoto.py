@@ -18,10 +18,9 @@ class ImagePublisher(Node):
         self.cap = cv2.VideoCapture(5)
         self.cap.set(cv2.CAP_PROP_FPS , 5)
         self.pub = self.create_publisher(Image, "video", 5)
-        self.flag = 0
 
     def run(self):
-        while(self.cap.isOpened() and self.flag = 0):
+        while(self.cap.isOpened()):
             ret, frame = self.cap.read() 
             h, w, c = frame.shape
             print('width:  ', w)
@@ -33,7 +32,6 @@ class ImagePublisher(Node):
                 time.sleep(0.5)
                 tp = time.time()
                 print (f"Published, time= {tp-ti}")
-                self.flag = 1
             else:
                 self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
 
