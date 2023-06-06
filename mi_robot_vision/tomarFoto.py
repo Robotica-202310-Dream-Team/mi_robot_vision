@@ -17,7 +17,7 @@ class ImagePublisher(Node):
         self.bridge = CvBridge()
         self.cap = cv2.VideoCapture(5)
         self.cap.set(cv2.CAP_PROP_FPS , 5)
-        self.pub = self.create_publisher(Image, "video", 10)
+        self.pub = self.create_publisher(Image, "video", 5)
 
     def run(self):
         while(self.cap.isOpened()):
@@ -30,6 +30,7 @@ class ImagePublisher(Node):
             if ret:
                 ti= time.time() 
                 self.pub.publish(self.bridge.cv2_to_imgmsg(frame, "bgr8"))
+                time.sleep(0.5)
                 tp = time.time()
                 print (f"Published, time= {tp-ti}")
             else:

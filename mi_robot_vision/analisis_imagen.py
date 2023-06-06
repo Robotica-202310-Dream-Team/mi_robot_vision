@@ -14,7 +14,7 @@ class Analisis_Imagen(Node):
     def __init__(self):
         super().__init__('analisis_imagen')
         self.bridge=CvBridge()
-        self.sub_video= self.create_subscription(Image,'video',self.callback_video, 1)
+        self.sub_video= self.create_subscription(Image,'video',self.callback_video, 5)
         print("Inicio del nodo que analiza la imagen recibida por la cámara")
         self.reader = easyocr.Reader(["es"], gpu=True)
     def callback_video(self,msg):
