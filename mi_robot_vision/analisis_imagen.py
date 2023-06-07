@@ -8,49 +8,66 @@ import os
 import sys
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
+from std_msgs.msg import String, Float32MultiArray, Bool
 import time
+from proyecto_interfaces.msg import Banner
 
 class Analisis_Imagen(Node):
 
     def __init__(self):
         super().__init__('analisis_imagen')
         self.bridge=CvBridge()
-        self.cap = cv2.VideoCapture('192.168.210.65:8080/video')
+        self.cap = cv2.VideoCapture('192.168.203.47:8080/video')
         print("Inicio del nodo que analiza la imagen recibida por la cámara")
+        self.subscriber_move = self.create_subscription(Bool, 'capturar_imagen' ,self.subscriber_callback_capturar, 5)
+        self.publisher = self.create_publisher(Banner, 'vision/banner_group_12', 10)
+        self.msg = Banner()
         self.reader = easyocr.Reader(["es"], gpu=True)
+        self.flag = False
+        self.banner = 0
+        self.figure = "NA"
+        self.word = "NA"
+        self.color = "NA"
         while(rclpy.Ok()):
-            recibirIMG()
+            self.recibirIMG()
 
 
     def recibirIMG(self):
-        if(self.cap.isOpened()):
-            ret, frame = self.cap.read() 
-            h, w, c = frame.shape
-            print('width:  ', w)
-            print('height: ', h)
-            cv_image = cv2.resize(frame, (int(h*0.5),int(w*0.5)))
+        if self.flag == True:
+            if(self.cap.isOpened()):
+                ret, frame = self.cap.read() 
+                h, w, c = frame.shape
+                print('width:  ', w)
+                print('height: ', h)
+                #cv_image = cv2.resize(frame, (int(h*0.5),int(w*0.5)))
 
-        else: 
-            self.cap.release()
-            print("cap not opened")
+            else: 
+                self.cap.release()
+                print("cap not opened")
 
-        image = cv_image[0:int (len(cv_image)*0.8),int (len(cv_image[0])*0.2): int (len(cv_image[0])*0.8)]
-        self.detectar_colores(image)
-        figura = self.detectar_figura(image)
-        self.detectar_letras(image)
-        #print (f"La figura es: {figura}")
-        ruta ="/home/sebastian/Uniandes202310/Robotica/proyecto_final/proyecto_final_ws/src/mi_robot_vision/mi_robot_vision/perspectiva_actual.png"
-		
-        cv2.imshow("Image window", image)
-        #cv2.imwrite (ruta,image)
-        cv2.waitKey(1)
-        tf = time.time()
-    
+            #image = frame[0:int (len(frame)*0.8),int (len(frame[0])*0.2): int (len(frame[0])*0.8)]
+            self.detectar_colores(frame)
+            self.figure = self.detectar_figura(frame)
+            self.detectar_letras(frame)
+            #print (f"La figura es: {figura}")
+            #ruta ="/home/sebastian/Uniandes202310/Robotica/proyecto_final/proyecto_final_ws/src/mi_robot_vision/mi_robot_vision/perspectiva_actual.png"
+            self.msg.banner = self.banner
+            self.msg.figure = self.figure
+            self.msg.word = self.word
+            self.msg.color = self.color
+            self.publisher.publish(self.msg)
+
+            cv2.imshow("Image window", frame)
+            #cv2.imwrite (ruta,image)
+            cv2.waitKey(10)
+            tf = time.time()
+        
 #############################################################################################################
     def detectar_letras(self,image):
         result = self.reader.readtext(image, paragraph=True)
         for res in result:
             print("res:", res[1])
+            self.word= res[1]
             pt0 = res[0][0]
             pt1 = res[0][1]
             pt2 = res[0][2]
@@ -152,6 +169,7 @@ class Analisis_Imagen(Node):
             area = cv2.contourArea(contour)
             if(area > 20000):
                 print (area)
+                self.color = "Red"
                 x, y, w, h = cv2.boundingRect(contour)
                 image = cv2.rectangle(image, (x, y),
                                         (x + w, y + h),
@@ -168,6 +186,7 @@ class Analisis_Imagen(Node):
             area = cv2.contourArea(contour)
             if(area > 20000):
                 print (area)
+                self.color = "Green"
                 x, y, w, h = cv2.boundingRect(contour)
                 image = cv2.rectangle(image, (x, y),
                                         (x + w, y + h),
@@ -184,6 +203,7 @@ class Analisis_Imagen(Node):
             area = cv2.contourArea(contour)
             if(area > 20000):
                 print (area)
+                self.color = "Blue"
                 x, y, w, h = cv2.boundingRect(contour)
                 image = cv2.rectangle(image, (x, y),
                                         (x + w, y + h),
