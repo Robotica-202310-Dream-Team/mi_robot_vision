@@ -14,20 +14,29 @@ class Analisis_Imagen(Node):
     def __init__(self):
         super().__init__('analisis_imagen')
         self.bridge=CvBridge()
-        self.sub_video= self.create_subscription(Image,'video',self.callback_video, 5)
+        self.cap = cv2.VideoCapture('192.168.210.65:8080/video')
         print("Inicio del nodo que analiza la imagen recibida por la cámara")
-        self.reader = easyocr.Reader(["es"], gpu=True)
-    def callback_video(self,msg):
-        ti = time.time()
-        print("Llego imagen")
-        try:
-            cv_image = self.bridge.imgmsg_to_cv2(msg, "bgr8")
-        except CvBridgeError as e:
-            print(e)
+        self.reader = easyocr.Reader(["es"], gpu=False)
+        while(rclpy.Ok()):
+            recibirIMG()
+
+
+    def recibirIMG(self):
+        if(self.cap.isOpened()):
+            ret, frame = self.cap.read() 
+            h, w, c = frame.shape
+            print('width:  ', w)
+            print('height: ', h)
+            cv_image = cv2.resize(frame, (int(h*0.5),int(w*0.5)))
+
+        else: 
+            self.cap.release()
+            print("cap not opened")
+
         image = cv_image[0:int (len(cv_image)*0.8),int (len(cv_image[0])*0.2): int (len(cv_image[0])*0.8)]
-        #self.detectar_colores(image)
-        #figura = self.detectar_figura(image)
-        #self.detectar_letras(image)
+        self.detectar_colores(image)
+        figura = self.detectar_figura(image)
+        self.detectar_letras(image)
         #print (f"La figura es: {figura}")
         ruta ="/home/sebastian/Uniandes202310/Robotica/proyecto_final/proyecto_final_ws/src/mi_robot_vision/mi_robot_vision/perspectiva_actual.png"
 		
@@ -35,7 +44,6 @@ class Analisis_Imagen(Node):
         #cv2.imwrite (ruta,image)
         cv2.waitKey(1)
         tf = time.time()
-        print (f"Tiempo de ejecución: {tf-ti}")
     
 #############################################################################################################
     def detectar_letras(self,image):
