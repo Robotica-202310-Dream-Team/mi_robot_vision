@@ -1,3 +1,4 @@
+#:D
 import easyocr
 import numpy as np
 import rclpy
