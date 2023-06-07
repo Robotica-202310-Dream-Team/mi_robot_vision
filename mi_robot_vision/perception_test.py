@@ -13,10 +13,9 @@ class Perception_test(Node):
     def __init__(self):
         super().__init__('perception_test')
         self.srv = self.create_service(StartPerceptionTest, 'group_12/start_perception_test_srv', self.read_txt_callback)
-        self.publisher = self.create_publisher(Banner, 'vision/banner_group_12', 10)
-        self.sub_pos_final= self.create_subscription(Float32MultiArray,'posicion_final',self.callback_pos_final, 10)
-        self.sub_llego= self.create_subscription(Bool,'llego',self.callback_llego, 10)
-
+        #self.sub_pos_final= self.create_subscription(Float32MultiArray,'posicion_final',self.callback_pos_final, 10)
+        self.publisher= self.create_publisher(Float32MultiArray, 'banners_list', 50)
+        self.msg = Float32MultiArray()
         print('Servicio para la prueba de percepción listo')
         x_goal_1 = 0
         y_goal_1 = 0  
@@ -29,38 +28,51 @@ class Perception_test(Node):
         banner_b_goal = request.banner_b
         print("Los banners a identificar son: " + str(banner_a_goal) + " y "+ str(banner_b_goal))
         if banner_a_goal == 1:
-            x_goal_1 = 0.0
-            y_goal_1 = 0.0
+            x_goal_1 = 35.0
+            y_goal_1 = -3.0
+            if banner_b_goal == 2:
+                x_goal_2 = 32.0
+                y_goal_2 = 10.0
+                self.msg.data = [2.0,1.0]
+                self.publisher.publish(self.msg)
+            elif banner_b_goal == 3:
+                x_goal_2 = 45.0
+                y_goal_2 = 7.0
+                self.msg.data = [3.0,1.0]
+                self.publisher.publish(self.msg)
         elif banner_a_goal == 2:
-            x_goal_1 = 0.0
-            y_goal_1 = 0.0
+            x_goal_1 = 32.0
+            y_goal_1 = 10.0
+            if banner_b_goal == 1:
+                x_goal_2 = 35.0
+                y_goal_2 = -3.0
+                self.msg.data = [2.0,1.0]
+                self.publisher.publish(self.msg)
+            
+            elif banner_b_goal == 3:
+                x_goal_2 = 45.0
+                y_goal_2 = 7.0 
+                self.msg.data = [2.0,3.0]
+                self.publisher.publish(self.msg)
+            
         elif banner_a_goal == 3:
-            x_goal_1 = 0.0
-            y_goal_1 = 0.0
-
-        if banner_b_goal == 1:
-            x_goal_2 = 0.0
-            y_goal_2 = 0.0
-        elif banner_b_goal == 2:
-            x_goal_2 = 0.0
-            y_goal_2 = 0.0
-        elif banner_b_goal == 3:
-            x_goal_2 = 0.0
-            y_goal_2 = 0.0 
-        self.call_navigation_test_srv(float(x_goal_1),float(y_goal_1))
+            x_goal_1 = 45.0
+            y_goal_1 = 7.0 
+            if banner_b_goal == 2:
+                x_goal_2 = 32.0
+                y_goal_2 = 10.0
+                self.msg.data = [2.0,3.0]
+                self.publisher.publish(self.msg)
+            
+            elif banner_b_goal == 1:
+                x_goal_2 = 35.0
+                y_goal_2 = -3.0
+                self.msg.data = [3.0,1.0]
+                self.publisher.publish(self.msg)
+        self.publisher.publish(self.msg)
         response.answer = "Debo identificar el banner a que se encuentra en las coordenadas ("+str(x_goal_1)+","+str(y_goal_1)+") y el banner b que se encuentra en las coordenadas ("+str(x_goal_2)+","+str(y_goal_2)+")."
         return response
 
-    def call_navigation_test_srv(self, x_coordinate: float, y_coordinate: float):
-        self.navigation_client = self.create_client(StartNavigationTest, '/group_12/start_navigation_test_srv')
-        while not self.navigation_client.wait_for_service(timeout_sec=1.0):
-            self.get_logger().info('Service not available, waiting again...')
-        self.req = StartNavigationTest.Request()
-        self.req.x = x_coordinate
-        self.req.y = y_coordinate
-        self.future = self.navigation_client.call_async(self.req)
-        rclpy.spin_until_future_complete(self, self.future)
-        return self.future.result()
 
 def main(args=None):
     rclpy.init(args=args)

@@ -1,3 +1,4 @@
+#:D
 import easyocr
 import numpy as np
 import rclpy
@@ -7,41 +8,92 @@ import os
 import sys
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
+from std_msgs.msg import String, Float32MultiArray, Bool
 import time
+import imutils
+from proyecto_interfaces.msg import Banner
 
 class Analisis_Imagen(Node):
 
     def __init__(self):
         super().__init__('analisis_imagen')
         self.bridge=CvBridge()
-        self.sub_video= self.create_subscription(Image,'video',self.callback_video, 5)
+        self.cap = cv2.VideoCapture('192.168.203.47:8080/video')
         print("Inicio del nodo que analiza la imagen recibida por la cámara")
+        self.subscriber_move = self.create_subscription(Bool, 'tomar_foto' ,self.subscriber_callback, 5)
+        self.banners_info = self.create_subscription(Float32MultiArray, 'banners_list' ,self.subscriber_banners_info, 50)
+        self.banners = [0.0,0.0]
+        self.publisher = self.create_publisher(Banner, 'vision/banner_group_12', 10)
+        self.msg = Banner()
         self.reader = easyocr.Reader(["es"], gpu=True)
-    def callback_video(self,msg):
-        ti = time.time()
-        print("Llego imagen")
-        try:
-            cv_image = self.bridge.imgmsg_to_cv2(msg, "bgr8")
-        except CvBridgeError as e:
-            print(e)
-        image = cv_image[0:int (len(cv_image)*0.8),int (len(cv_image[0])*0.2): int (len(cv_image[0])*0.8)]
-        #self.detectar_colores(image)
-        #figura = self.detectar_figura(image)
-        #self.detectar_letras(image)
-        #print (f"La figura es: {figura}")
-        ruta ="/home/sebastian/Uniandes202310/Robotica/proyecto_final/proyecto_final_ws/src/mi_robot_vision/mi_robot_vision/perspectiva_actual.png"
-		
-        cv2.imshow("Image window", image)
-        #cv2.imwrite (ruta,image)
-        cv2.waitKey(1)
-        tf = time.time()
-        print (f"Tiempo de ejecución: {tf-ti}")
+        self.flag = False
+        self.banner = 0
+        self.i = -1
+        self.figure = "NA"
+        self.word = "NA"
+        self.color = "NA"
+        self.color_r = (255,255,255)
+        self.colors_list  = {'blue': [np.array([95, 255, 85]), np.array([120, 255, 255])],
+        'red': [np.array([161, 165, 127]), np.array([178, 255, 255])],
+        'yellow': [np.array([16, 0, 99]), np.array([39, 255, 255])],
+        'green': [np.array([33, 19, 105]), np.array([77, 255, 255])]}
+
+            
     
+            
+###########################################################3######################
+    def subscriber_banners_info(self, msg):
+        self.banners = msg.data 
+        self.i += 1
+        if self.i >=2:
+            self.i += -1
+        
+        
+
+
+###########################################################3######################
+    def subscriber_callback(self, msg):
+        flag = msg.data()
+        if flag:
+            self.recibirIMG()
+#####################################################################################
+    def recibirIMG(self):
+        if(self.cap.isOpened()):
+            ret, frame = self.cap.read() 
+            h, w, c = frame.shape
+            print('width:  ', w)
+            print('height: ', h)
+            #cv_image = cv2.resize(frame, (int(h*0.5),int(w*0.5)))
+
+        else: 
+            self.cap.release()
+            print("cap not opened")
+
+        #image = frame[0:int (len(frame)*0.8),int (len(frame[0])*0.2): int (len(frame[0])*0.8)]
+        self.detectar_colores()
+        self.figure = self.detectar_figura(frame)
+        self.detectar_letras(frame)
+        #print (f"La figura es: {figura}")
+        #ruta ="/home/sebastian/Uniandes202310/Robotica/proyecto_final/proyecto_final_ws/src/mi_robot_vision/mi_robot_vision/perspectiva_actual.png"
+        self.banner = self.banners [self.i]
+        self.msg.banner = self.banner
+        self.msg.figure = self.figure
+        self.msg.word = self.word
+        self.msg.color = self.color
+        self.publisher.publish(self.msg)
+
+        cv2.imshow("Image window", frame)
+        #cv2.imwrite (ruta,image)
+        cv2.waitKey(10)
+        tf = time.time()
+        
 #############################################################################################################
     def detectar_letras(self,image):
         result = self.reader.readtext(image, paragraph=True)
+        print (f"len result: {len(result)}")
         for res in result:
             print("res:", res[1])
+            self.word= res[1]
             pt0 = res[0][0]
             pt1 = res[0][1]
             pt2 = res[0][2]
@@ -100,7 +152,35 @@ class Analisis_Imagen(Node):
         cv2.drawContours(image, [approx], 0, (0,255,0),2) 
         return figure
 #################################################################################################################
-    def detectar_colores(self,image):
+    def detectar_colores(self):
+        if self.cap.isOpened(): #main loop
+            ret, frame = self.cap.read()
+            hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV) #convertion to HSV
+            for name, clr in self.colors_list.items(): # for each color in colors
+                if self.find_color(hsv, clr):  # call find_color function above
+                    c, cx, cy = self.find_color(hsv, clr)
+                    cv2.drawContours(frame, [c], -1, self.color_r, 3) #draw contours
+                    cv2.circle(frame, (cx, cy), 7, self.color_r, -1)  # draw circle
+                    cv2.putText(frame, name, (cx,cy), 
+                                cv2.FONT_HERSHEY_SIMPLEX, 1, self.color_r, 1)
+                    self.color = name # put text
+            #cv2.imshow("Frame: ", frame) # show image
+        #cv2.waitkey(1)
+
+    def find_color(frame, points):
+        mask = cv2.inRange(frame, points[0], points[1])#create mask with boundaries 
+        cnts = cv2.findContours(mask, cv2.RETR_TREE, 
+                            cv2.CHAIN_APPROX_SIMPLE) # find contours from mask
+        cnts = imutils.grab_contours(cnts)
+        for c in cnts:
+            area = cv2.contourArea(c) # find how big countour is
+            if area > 5000  and area < 10000:      # only if countour is big enough, then
+                M = cv2.moments(c)
+                cx = int(M['m10'] / M['m00']) # calculate X position
+                cy = int(M['m01'] / M['m00']) # calculate Y position
+                return c, cx, cy
+            
+        '''
         hsvFrame = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
         # Set range for red color and
         # define mask
@@ -143,6 +223,7 @@ class Analisis_Imagen(Node):
             area = cv2.contourArea(contour)
             if(area > 20000):
                 print (area)
+                self.color = "Red"
                 x, y, w, h = cv2.boundingRect(contour)
                 image = cv2.rectangle(image, (x, y),
                                         (x + w, y + h),
@@ -159,6 +240,7 @@ class Analisis_Imagen(Node):
             area = cv2.contourArea(contour)
             if(area > 20000):
                 print (area)
+                self.color = "Green"
                 x, y, w, h = cv2.boundingRect(contour)
                 image = cv2.rectangle(image, (x, y),
                                         (x + w, y + h),
@@ -175,13 +257,15 @@ class Analisis_Imagen(Node):
             area = cv2.contourArea(contour)
             if(area > 20000):
                 print (area)
+                self.color = "Blue"
                 x, y, w, h = cv2.boundingRect(contour)
                 image = cv2.rectangle(image, (x, y),
                                         (x + w, y + h),
                                         (255, 0, 0), 2)
                 cv2.putText(image, "Blue Colour", (x, y),
                             cv2.FONT_HERSHEY_SIMPLEX,
-                            1.0, (255, 0, 0))
+                            1.0, (255, 0, 0))'''
+
                 
 def main(args=None):
     rclpy.init(args=args)
