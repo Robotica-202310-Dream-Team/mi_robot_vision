@@ -21,23 +21,36 @@ class Analisis_Imagen(Node):
         self.cap = cv2.VideoCapture('192.168.203.47:8080/video')
         print("Inicio del nodo que analiza la imagen recibida por la cámara")
         self.subscriber_move = self.create_subscription(Bool, 'tomar_foto' ,self.subscriber_callback, 5)
+        self.banners_info = self.create_subscription(Float32MultiArray, 'banners_list' ,self.subscriber_banners_info, 50)
+        self.banners = [0.0,0.0]
         self.publisher = self.create_publisher(Banner, 'vision/banner_group_12', 10)
         self.msg = Banner()
         self.reader = easyocr.Reader(["es"], gpu=True)
         self.flag = False
         self.banner = 0
+        self.i = -1
         self.figure = "NA"
         self.word = "NA"
         self.color = "NA"
         self.color_r = (255,255,255)
         self.colors_list  = {'blue': [np.array([95, 255, 85]), np.array([120, 255, 255])],
-          'red': [np.array([161, 165, 127]), np.array([178, 255, 255])],
-          'yellow': [np.array([16, 0, 99]), np.array([39, 255, 255])],
-          'green': [np.array([33, 19, 105]), np.array([77, 255, 255])]}
+        'red': [np.array([161, 165, 127]), np.array([178, 255, 255])],
+        'yellow': [np.array([16, 0, 99]), np.array([39, 255, 255])],
+        'green': [np.array([33, 19, 105]), np.array([77, 255, 255])]}
 
             
     
             
+###########################################################3######################
+    def subscriber_banners_info(self, msg):
+        self.banners = msg.data 
+        self.i += 1
+        if self.i >=2:
+            self.i += -1
+        
+        
+
+
 ###########################################################3######################
     def subscriber_callback(self, msg):
         flag = msg.data()
@@ -62,6 +75,7 @@ class Analisis_Imagen(Node):
         self.detectar_letras(frame)
         #print (f"La figura es: {figura}")
         #ruta ="/home/sebastian/Uniandes202310/Robotica/proyecto_final/proyecto_final_ws/src/mi_robot_vision/mi_robot_vision/perspectiva_actual.png"
+        self.banner = self.banners [self.i]
         self.msg.banner = self.banner
         self.msg.figure = self.figure
         self.msg.word = self.word
